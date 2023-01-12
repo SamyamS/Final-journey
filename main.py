@@ -72,6 +72,7 @@ class character():
     def draw(self):
         screen.blit(self.image, self.rect)
 
+    #if the time exceeds 85ms then the frame is updated by a new image using this update function
     def update_animation(self):
         animation_cooldown = 85 #this is 100ms
         self.image = self.animation_list[self.action][self.frame]
