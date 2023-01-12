@@ -31,7 +31,7 @@ def draw_panel():
     screen.blit(panel_img, (0,screen_height - bottom_panel))
 
 
-#Classes 
+#Classes TODO: maybe add child classes to solve the animation cutting in half due to variable number of images for each character and their actions
 class character():
     def __init__(self, x, y, name, max_hp, strength, health_potions):
         self.name = name     
