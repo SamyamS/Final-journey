@@ -8,6 +8,7 @@ clock = pygame.time.Clock()
 fps = 60 #can be anything
 
 #setup screen size and display screen
+#Maybe get new panel designs
 bottom_panel = 150
 screen_width = 800
 screen_height = 512 + bottom_panel
