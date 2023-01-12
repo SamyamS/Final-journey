@@ -14,6 +14,10 @@ screen_width = 800
 screen_height = 512 + bottom_panel
 screen = pygame.display.set_mode((screen_width, screen_height))
 
+font = pygame.font.SysFont('Time New Roman', 35)
+red = (255,0,0)
+green = (0,255,0)
+
 #just setting the title of the window
 pygame.display.set_caption('Final x Journey')
 
@@ -27,9 +31,17 @@ panel_img = pygame.image.load('Img/GUI/panel.png').convert_alpha()
 def draw_bg():
     screen.blit(bg_img, (0,0))
 
+#function to display text in the game window
+def draw_text(text, font, text_col, x, y):
+    image = font.render(text, True, text_col)
+    screen.blit(image, (x,y))
+
 #function to draw the bottom panel bar in game window
 def draw_panel():
+    #display the panel box
     screen.blit(panel_img, (0,screen_height - bottom_panel))
+    #display knight stats
+    draw_text(f'{knight.name} HP:{knight.hp}', font, red, 100, screen_height - bottom_panel + 10 )
 
 
 #Classes TODO: maybe add child classes to solve the animation cutting in half due to variable number of images for each character and their actions
