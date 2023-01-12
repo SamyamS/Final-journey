@@ -49,6 +49,7 @@ class character():
 
         #for different actions we have different animations so we need to store them 
         #Store the idle animation images 
+        #here the range index is the number of images in the sprite/ the animation folder for each actions
         temp_list = []
         for i in range(10): #loop through 10 images in our animation 
             image = pygame.image.load(f'Img/Characters/{self.name}/Animation/Idle/{i+1}.png')
