@@ -36,8 +36,59 @@ class character():
     def __init__(self, x, y, name, max_hp, strength, health_potions):
         self.name = name     
         self.max_hp = max_hp   
+        self.hp = max_hp
+        self.strength = strength
+        self.start_health_potions = health_potions
+        self.health_potions = health_potions
+        self.alive = True
+        #This section is for animation
+        self.animation_list = [] 
+        self.frame = 0
+        self.update_time = pygame.time.get_ticks()
+        self.action = 0 #action 0:Idle 1:Attack 2:Hit taken 3:Dead
 
+        #for different actions we have different animations so we need to store them 
+        #Store the idle animation images 
+        temp_list = []
+        for i in range(10): #loop through 10 images in our animation 
+            image = pygame.image.load(f'Img/Characters/{self.name}/Animation/Idle/{i+1}.png')
+            image = pygame.transform.scale(image, (image.get_width() *4, image.get_height() *4))
+            temp_list.append(image)
+        self.animation_list.append(temp_list)
 
+        #Store the attack animation images 
+        temp_list = []
+        for i in range(6): #loop through 10 images in our animation 
+            image = pygame.image.load(f'Img/Characters/{self.name}/Animation/Attack/{i+1}.png')
+            image = pygame.transform.scale(image, (image.get_width() *4, image.get_height() *4))
+            temp_list.append(image)
+        self.animation_list.append(temp_list)
+
+        self.image = self.animation_list[self.action][self.frame]
+        self.rect = self.image.get_rect()
+        self.rect.center = (x,y)
+
+    def draw(self):
+        screen.blit(self.image, self.rect)
+
+    def update_animation(self):
+        animation_cooldown = 85 #this is 100ms
+        self.image = self.animation_list[self.action][self.frame]
+
+        if (pygame.time.get_ticks() - self.update_time > animation_cooldown):
+            self.update_time = pygame.time.get_ticks()
+            self.frame +=1 
+        if (self.frame >= len(self.animation_list[self.action])):
+            self.frame = 0
+
+knight = character(200,300,'Knight',30,5,3)
+skeleton1 = character(500,400,'Skeleton',10,2,1)
+skeleton2 = character(600,400,'Skeleton',10,2,1)
+
+#make a list to store the skeletons/villains
+villain_list = []
+villain_list.append(skeleton1)
+villain_list.append(skeleton2)
 
 #have to set run as true so pygame can use a while to loop through it 
 run = True
@@ -49,6 +100,13 @@ while run:
     #draw the background and panel
     draw_bg()
     draw_panel()
+
+    #draw our hero knight and other characters
+    knight.update_animation()
+    knight.draw()
+    for villain in villain_list:
+        villain.update_animation()
+        villain.draw()
 
     #pygame event listner 
     for event in pygame.event.get():
