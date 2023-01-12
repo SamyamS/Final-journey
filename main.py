@@ -104,7 +104,7 @@ while run:
     draw_bg()
     draw_panel()
 
-    #draw our hero knight and other characters
+    #draw our hero knight and other characters (skeleton used as the other character for now)
     knight.update_animation()
     knight.draw()
     for villain in villain_list:
