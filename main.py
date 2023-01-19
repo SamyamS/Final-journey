@@ -63,13 +63,19 @@ class character():
         self.animation_list = [] 
         self.frame = 0
         self.update_time = pygame.time.get_ticks()
-        self.action = 0 #action 0:Idle 1:Attack 2:Hit taken 3:Dead
+        self.action = 1 #action 0:Idle 1:Attack 2:Hit taken 3:Dead
 
         #for different actions we have different animations so we need to store them 
-        #Store the idle animation images 
         #here the range index is the number of images in the sprite/ the animation folder for each actions
+
+        #Store the idle animation images 
         temp_list = []
-        for i in range(10): #loop through 10 images in our animation 
+        number_of_images = 0     #Doing this as there is different number of images for knight and skeleton for animation
+        if self.name == "Knight":
+            number_of_images = 10
+        if self.name == "Skeleton":
+            number_of_images = 11
+        for i in range(number_of_images): #loop through 10 images in our animation 
             image = pygame.image.load(f'Img/Characters/{self.name}/Animation/Idle/{i+1}.png')
             image = pygame.transform.scale(image, (image.get_width() *4, image.get_height() *4))
             temp_list.append(image)
@@ -77,7 +83,12 @@ class character():
 
         #Store the attack animation images 
         temp_list = []
-        for i in range(6): #loop through 10 images in our animation 
+        number_of_images = 0 
+        if self.name == "Knight":
+            number_of_images = 6
+        if self.name == "Skeleton":
+            number_of_images = 18
+        for i in range(number_of_images): #loop through 10 images in our animation 
             image = pygame.image.load(f'Img/Characters/{self.name}/Animation/Attack/{i+1}.png')
             image = pygame.transform.scale(image, (image.get_width() *4, image.get_height() *4))
             temp_list.append(image)
