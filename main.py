@@ -17,6 +17,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 font = pygame.font.SysFont('Time New Roman', 35)
 red = (255,0,0)
 green = (0,255,0)
+blue = (26,144,235)
 white = (255,255,255)
 
 #just setting the title of the window
@@ -43,6 +44,8 @@ def draw_panel():
     screen.blit(panel_img, (0,screen_height - bottom_panel))
     #display knight stats
     draw_text(f'{knight.name} HP:{knight.hp}', font, red, 100, screen_height - bottom_panel + 10 )
+    draw_text(f'{knight.name} Mana:{knight.mana}', font, blue, 100, screen_height - bottom_panel + 70 )
+    #display skeleton stats
     gap_between_lines = 0
     for count, i in enumerate(skeleton_list):        
         draw_text(f'{i.name} {count+1} HP:{i.hp}', font, red, 500, screen_height - bottom_panel + 10 + gap_between_lines)
@@ -51,10 +54,12 @@ def draw_panel():
 
 #Classes TODO: maybe add child classes to solve the animation cutting in half due to variable number of images for each character and their actions
 class character():
-    def __init__(self, x, y, name, max_hp, strength, health_potions):
+    def __init__(self, x, y, name, max_hp, strength, health_potions, max_mana = 0):
         self.name = name     
         self.max_hp = max_hp   
         self.hp = max_hp
+        self.max_mana = max_mana   
+        self.mana = max_mana
         self.strength = strength
         self.start_health_potions = health_potions
         self.health_potions = health_potions
@@ -114,21 +119,28 @@ class character():
 
 #Class for the health bar
 class health_bar: 
-    def __init__(self, x, y, hp, max_hp):
+    def __init__(self, x, y, hp, max_hp, mana = 0 , max_mana = 0):
         self.x = x
         self.y = y
         self.hp = hp   #current hp
         self.max_hp = max_hp
+        self.mana = mana   #current MANA
+        self.max_mana = max_mana
         self.health_bar_length = 200
         self.health_ratio = self.max_hp/self.health_bar_length
+        self.mana_ratio = self.max_mana/self.health_bar_length
         self.health_change_speed = 5
 
     def draw(self,hp):
         pygame.draw.rect(screen, red, (self.x,self.y, self.hp/self.health_ratio, 20))
         pygame.draw.rect(screen, white, (self.x,self.y, self.health_bar_length, 20),4)   #here 4 is the width of the border   
 
+    def draw_mana_bar(self,mana):
+        pygame.draw.rect(screen, blue, (self.x,self.y, self.mana/self.mana_ratio, 20))
+        pygame.draw.rect(screen, white, (self.x,self.y, self.health_bar_length, 20),4)   #here 4 is the width of the border   
+
 #create objects from the classes here
-knight = character(200,300,'Knight',30,5,3)
+knight = character(200,300,'Knight',30,5,3,20)
 skeleton1 = character(500,400,'Skeleton',10,2,1)
 skeleton2 = character(600,400,'Skeleton',10,2,1)
 
@@ -141,6 +153,8 @@ skeleton_list.append(skeleton2)
 
 #health bar instances
 knight_health_bar = health_bar(100, screen_height - bottom_panel + 40, knight.hp, knight.max_hp)
+#used the same health bar class to store the mana details as well but made the mana values optional
+knight_mana_bar = health_bar(100, screen_height - bottom_panel + 100, 0,0,knight.mana, knight.max_mana)
 skeleton1_health_bar = health_bar(500, screen_height - bottom_panel + 40, skeleton1.hp, skeleton1.max_hp)
 skeleton2_health_bar = health_bar(500, screen_height - bottom_panel + 100, skeleton2.hp, skeleton2.max_hp)
 
@@ -158,6 +172,7 @@ while run:
     #Draw the bottom panels and the health bars in them
     draw_panel() #draw panel contains draw texts which displays the texts
     knight_health_bar.draw(knight.hp)
+    knight_mana_bar.draw_mana_bar(knight.hp)
     skeleton1_health_bar.draw(skeleton1.hp)
     skeleton2_health_bar.draw(skeleton2.hp)
 
