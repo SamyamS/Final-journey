@@ -38,7 +38,7 @@ def draw_text(text, font, text_col, x, y):
     image = font.render(text, True, text_col)
     screen.blit(image, (x,y))
 
-#function to draw the bottom panel bar in game window
+#function to draw the bottom panel bar in game window 
 def draw_panel():
     #display the panel box
     screen.blit(panel_img, (0,screen_height - bottom_panel))
