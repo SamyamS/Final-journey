@@ -51,8 +51,35 @@ def draw_panel():
         draw_text(f'{i.name} {count+1} HP:{i.hp}', font, red, 500, screen_height - bottom_panel + 10 + gap_between_lines)
         gap_between_lines +=60
 
+#To get the number of images involved in the animation
+def number_of_images_in_animation(name, action):    
+    if action == "Idle":
+        if name == "Knight":
+            return 10
+        if name == "Skeleton":
+            return 11
+    elif action == "Attack":
+        if name == "Knight":
+            return 6
+        if name == "Skeleton":
+            return 18
+    return 0
 
-#Classes TODO: maybe add child classes to solve the animation cutting in half due to variable number of images for each character and their actions
+#Common function for animating actions
+#store the images that is required for the animation in a 2D list 
+#self.animation_list[self.action][self.frame], here the below function returns a list temp_list which
+# is a list of all images required for a particular action, that list is then appeneded in the animation list
+def animation_images_list(name, action):
+    number_of_images = number_of_images_in_animation(name,action)
+    temp_list = []
+    #for different actions we have different animations so we need to store them 
+    #here the range index is the number of images in the sprite/ the animation folder for each actions
+    for i in range(number_of_images): #loop through 10 images in our animation 
+            image = pygame.image.load(f'Img/Characters/{name}/Animation/{action}/{i+1}.png')
+            image = pygame.transform.scale(image, (image.get_width() *4, image.get_height() *4))
+            temp_list.append(image)
+    return temp_list
+
 class character():
     def __init__(self, x, y, name, max_hp, strength, health_potions, max_mana = 0):
         self.name = name     
@@ -64,42 +91,18 @@ class character():
         self.start_health_potions = health_potions
         self.health_potions = health_potions
         self.alive = True
+
         #This section is for animation
         self.animation_list = [] 
         self.frame = 0
         self.update_time = pygame.time.get_ticks()
-        self.action = 1 #action 0:Idle 1:Attack 2:Hit taken 3:Dead
+        self.action = 1 #action 0:Idle 1:Attack 2:Hit_taken 3:Dead
 
-        #for different actions we have different animations so we need to store them 
-        #here the range index is the number of images in the sprite/ the animation folder for each actions
-
-        #Store the idle animation images 
-        temp_list = []
-        number_of_images = 0     #Doing this as there is different number of images for knight and skeleton for animation
-        if self.name == "Knight":
-            number_of_images = 10
-        if self.name == "Skeleton":
-            number_of_images = 11
-        for i in range(number_of_images): #loop through 10 images in our animation 
-            image = pygame.image.load(f'Img/Characters/{self.name}/Animation/Idle/{i+1}.png')
-            image = pygame.transform.scale(image, (image.get_width() *4, image.get_height() *4))
-            temp_list.append(image)
-        self.animation_list.append(temp_list)
-
-        #Store the attack animation images 
-        temp_list = []
-        number_of_images = 0 
-        if self.name == "Knight":
-            number_of_images = 6
-        if self.name == "Skeleton":
-            number_of_images = 18
-        for i in range(number_of_images): #loop through 10 images in our animation 
-            image = pygame.image.load(f'Img/Characters/{self.name}/Animation/Attack/{i+1}.png')
-            image = pygame.transform.scale(image, (image.get_width() *4, image.get_height() *4))
-            temp_list.append(image)
-        self.animation_list.append(temp_list)
-
-        self.image = self.animation_list[self.action][self.frame]
+        #Store the idle animation images into the 2D nested animation_list
+        self.animation_list.append(animation_images_list(self.name, "Idle"))
+        self.animation_list.append(animation_images_list(self.name, "Attack"))
+        
+        self.image = self.animation_list[self.action][self.frame] #inital image [0][0]
         self.rect = self.image.get_rect()
         self.rect.center = (x,y)
 
@@ -139,7 +142,6 @@ class health_bar:
         pygame.draw.rect(screen, blue, (self.x,self.y, self.mana/self.mana_ratio, 20))
         pygame.draw.rect(screen, white, (self.x,self.y, self.health_bar_length, 20),4)   #here 4 is the width of the border   
 
-#create objects from the classes here
 knight = character(200,300,'Knight',30,5,3,20)
 skeleton1 = character(500,400,'Skeleton',10,2,1)
 skeleton2 = character(600,400,'Skeleton',10,2,1)
