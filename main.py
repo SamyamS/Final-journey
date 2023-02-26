@@ -33,13 +33,20 @@ clicked = False
 pygame.display.set_caption('Final x Journey')
 
 #load background image
-bg_img = pygame.image.load('Img/Background/1.png').convert_alpha()
+bg_img = pygame.image.load('Assets/Img/Background/1.png').convert_alpha()
 
 #load bottom panel bar
-panel_img = pygame.image.load('Img/GUI/panel.png').convert_alpha()
+panel_img = pygame.image.load('Assets/Img/GUI/panel.png').convert_alpha()
 
 #load mouse sword icon image 
-mouse_sword_icon = pygame.image.load('Img/Icon/mouse_sword_icon.png').convert_alpha()
+mouse_sword_icon = pygame.image.load('Assets/Img/Icon/mouse_sword_icon.png').convert_alpha()
+
+#For the background music
+# Load the background music
+pygame.mixer.music.load('Assets/Music/forrest.wav')
+pygame.mixer.music.set_volume(0.5)
+# Play the music in a loop
+pygame.mixer.music.play(-1)
 
 #function to draw the background in game window
 def draw_bg():
@@ -73,7 +80,7 @@ def number_of_images_in_animation(name, action):
             return 11
     elif action == "Attack":
         if name == "Knight":
-            return 6
+            return 4
         elif name == "Skeleton":
             return 18
     elif action == "Dead":
@@ -81,6 +88,11 @@ def number_of_images_in_animation(name, action):
             return 10
         elif name == "Skeleton":
             return 15
+    elif action == "Hit":
+        if name == "Knight":
+            return 1
+        elif name == "Skeleton":
+            return 8
     return 0
 
 #Common function for animating actions
@@ -93,7 +105,7 @@ def animation_images_list(name, action):
     #for different actions we have different animations so we need to store them 
     #here the range index is the number of images in the sprite/ the animation folder for each actions
     for i in range(number_of_images): #loop through 10 images in our animation 
-            image = pygame.image.load(f'Img/Characters/{name}/Animation/{action}/{i+1}.png')
+            image = pygame.image.load(f'Assets/Img/Characters/{name}/Animation/{action}/{i+1}.png')
             image = pygame.transform.scale(image, (image.get_width() *4, image.get_height() *4))
             temp_list.append(image)
     return temp_list
@@ -122,6 +134,7 @@ class character():
         self.animation_list.append(animation_images_list(self.name, "Idle"))
         self.animation_list.append(animation_images_list(self.name, "Attack"))
         self.animation_list.append(animation_images_list(self.name, "Dead"))
+        self.animation_list.append(animation_images_list(self.name, "Hit"))
 
         self.image = self.animation_list[self.action][self.frame] #inital image [0][0]
         self.rect = self.image.get_rect()
@@ -162,6 +175,12 @@ class character():
         self.action = 2
         self.frame = 0
         self.update_time = pygame.time.get_ticks()
+
+    def hit(self):
+        #set hit taken animation
+        self.action = 3
+        self.frame = 0
+        self.update_time = pygame.time.get_ticks()
     
     def attack(self, target):
         #how much damage to deal?
@@ -172,6 +191,8 @@ class character():
         self.action = 1
         self.frame = 0
         self.update_time = pygame.time.get_ticks()
+        if target.name != "Knight":
+            target.hit()
 
         #check if target is dead 
         if target.hp <1:
