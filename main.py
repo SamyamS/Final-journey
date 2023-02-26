@@ -20,6 +20,15 @@ green = (0,255,0)
 blue = (26,144,235)
 white = (255,255,255)
 
+#Set game variables IMP!!!
+current_character = 1
+total_characters = 3
+action_cooldown = 0 
+action_wait_time = 130
+attack = False 
+health_potion = False 
+clicked = False
+
 #just setting the title of the window
 pygame.display.set_caption('Final x Journey')
 
@@ -28,6 +37,9 @@ bg_img = pygame.image.load('Img/Background/1.png').convert_alpha()
 
 #load bottom panel bar
 panel_img = pygame.image.load('Img/GUI/panel.png').convert_alpha()
+
+#load mouse sword icon image 
+mouse_sword_icon = pygame.image.load('Img/Icon/mouse_sword_icon.png').convert_alpha()
 
 #function to draw the background in game window
 def draw_bg():
@@ -52,17 +64,23 @@ def draw_panel():
         gap_between_lines +=60
 
 #To get the number of images involved in the animation
+#CAN MAKE THIS A DICTIONARY OF A DICTIONARY???
 def number_of_images_in_animation(name, action):    
     if action == "Idle":
         if name == "Knight":
             return 10
-        if name == "Skeleton":
+        elif name == "Skeleton":
             return 11
     elif action == "Attack":
         if name == "Knight":
             return 6
-        if name == "Skeleton":
+        elif name == "Skeleton":
             return 18
+    elif action == "Dead":
+        if name == "Knight":
+            return 10
+        elif name == "Skeleton":
+            return 15
     return 0
 
 #Common function for animating actions
@@ -82,6 +100,8 @@ def animation_images_list(name, action):
 
 class character():
     def __init__(self, x, y, name, max_hp, strength, health_potions, max_mana = 0):
+        self.x = x #storing x coordinate of where the character image will be drawn
+        self.y = y #storing y coordinate of where the character image will be drawn
         self.name = name     
         self.max_hp = max_hp   
         self.hp = max_hp
@@ -94,31 +114,70 @@ class character():
 
         #This section is for animation
         self.animation_list = [] 
-        self.frame = 0
+        self.frame = 0        
+        self.action = 0 #action 0:Idle 1:Attack 2:Dead 3:Hit_taken
         self.update_time = pygame.time.get_ticks()
-        self.action = 1 #action 0:Idle 1:Attack 2:Hit_taken 3:Dead
 
         #Store the idle animation images into the 2D nested animation_list
         self.animation_list.append(animation_images_list(self.name, "Idle"))
         self.animation_list.append(animation_images_list(self.name, "Attack"))
-        
+        self.animation_list.append(animation_images_list(self.name, "Dead"))
+
         self.image = self.animation_list[self.action][self.frame] #inital image [0][0]
         self.rect = self.image.get_rect()
-        self.rect.center = (x,y)
+        self.rect.center = (self.x,self.y)     
+           
 
     def draw(self):
         screen.blit(self.image, self.rect)
 
     #if the time exceeds 85ms then the frame is updated by a new image using this update function
-    def update_animation(self):
+    def update_animation(self):      
         animation_cooldown = 85 #this is 100ms
         self.image = self.animation_list[self.action][self.frame]
-
+        self.rect = self.image.get_rect()
+        if self.name != "Knight" and self.action==1:
+            self.rect.center = (220,380)  
+        else:
+            self.rect.center = (self.x,self.y)
+        
         if (pygame.time.get_ticks() - self.update_time > animation_cooldown):
             self.update_time = pygame.time.get_ticks()
             self.frame +=1 
-        if (self.frame >= len(self.animation_list[self.action])):
-            self.frame = 0
+        #This determines what happens when we run out of frames for animation
+        if (self.frame >= len(self.animation_list[self.action])):                       
+            if self.alive == False:
+                self.frame = len(self.animation_list[2]) - 1               
+            else:
+                self.idle()
+
+    def idle(self):
+        #set idle animation
+        self.action = 0
+        self.frame = 0
+        self.update_time = pygame.time.get_ticks()
+
+    def dead(self):
+        #set death animation
+        self.action = 2
+        self.frame = 0
+        self.update_time = pygame.time.get_ticks()
+    
+    def attack(self, target):
+        #how much damage to deal?
+        damage = self.strength
+        target.hp -= damage
+
+        #set attack animation
+        self.action = 1
+        self.frame = 0
+        self.update_time = pygame.time.get_ticks()
+
+        #check if target is dead 
+        if target.hp <1:
+            target.hp = 0
+            target.alive = False
+            target.dead()
 
 #Class for the health bar
 class health_bar: 
@@ -135,7 +194,9 @@ class health_bar:
         self.health_change_speed = 5
 
     def draw(self,hp):
-        pygame.draw.rect(screen, red, (self.x,self.y, self.hp/self.health_ratio, 20))
+        self.hp = hp        
+        # pygame.draw.rect(screen, red, (self.x,self.y, self.hp/self.health_ratio, 20))
+        pygame.draw.rect(screen, green, (self.x,self.y, self.hp/self.health_ratio, 20))
         pygame.draw.rect(screen, white, (self.x,self.y, self.health_bar_length, 20),4)   #here 4 is the width of the border   
 
     def draw_mana_bar(self,mana):
@@ -143,7 +204,7 @@ class health_bar:
         pygame.draw.rect(screen, white, (self.x,self.y, self.health_bar_length, 20),4)   #here 4 is the width of the border   
 
 knight = character(200,300,'Knight',30,5,3,20)
-skeleton1 = character(500,400,'Skeleton',10,2,1)
+skeleton1 = character(500,400,'Skeleton',10,20,1)
 skeleton2 = character(600,400,'Skeleton',10,2,1)
 
 #make a list to store the skeletons/villains
@@ -162,6 +223,7 @@ skeleton2_health_bar = health_bar(500, screen_height - bottom_panel + 100, skele
 
 
 #have to set run as true so pygame can use a while to loop through it 
+#MAIN GAME LOOOOP!!!
 run = True
 while run:
     
@@ -185,11 +247,68 @@ while run:
         villain.update_animation()
         villain.draw()
 
+#Player action section 
+    #RESET ACTION VARIABLES 
+    attack = False 
+    health_potion = False 
+    target = None
+
+    #Change mouse pointer icon to a sword when hovering over an enemy
+    #make mouse pointer visible 
+    pygame.mouse.set_visible(True)
+    mouse_pos = pygame.mouse.get_pos()
+    for count, skeleton in enumerate(skeleton_list):
+        if skeleton.rect.collidepoint(mouse_pos):
+            if skeleton.alive == True:
+                #hide the mouse and display our sword mouse icon
+                pygame.mouse.set_visible(False)
+                screen.blit(mouse_sword_icon, mouse_pos)
+                if clicked == True:
+                    attack = True 
+                    target = skeleton_list[count]
+
+    #KNIGHT ACTION / PLAYER ACTION  
+    if knight.alive == True:
+        if current_character == 1:
+            action_cooldown +=1
+            if action_cooldown >= action_wait_time:
+                #Do some player action 
+                #Do attack action 
+                if attack == True and target != None:
+                    knight.attack(target)
+                    current_character +=1
+                    action_cooldown = 0 
+
+    #SKELETON ACTION / ENEMY ACTION 
+    if knight.alive == True:
+        for count, skeleton in enumerate(skeleton_list):
+            if current_character == (2+count):
+                if skeleton.alive == True:            
+                        action_cooldown +=1
+                        if action_cooldown >= action_wait_time:
+                            #Do some enemy action 
+                            #Do attack action for skeleton
+                            skeleton.attack(knight)                                               
+                            current_character +=1
+                            action_cooldown = 0 
+                else:                
+                    current_character +=1
+
+    #if all fighters have had a turn then reset
+    if current_character > total_characters:
+        current_character = 1
+            
     #pygame event listner 
     for event in pygame.event.get():
         #checks whether the program window has been closed or not
         if event.type == pygame.QUIT:
             run = False
+
+        #check when mouse is clicked 
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            clicked = True
+        else: 
+            clicked = False
 
     pygame.display.update()
 
